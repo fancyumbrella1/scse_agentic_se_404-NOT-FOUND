@@ -111,7 +111,11 @@ def validate_code(source):
         safe = [move for move, flag in zip(DIRECTIONS, blocked) if not flag]
         for goal in (None, *DIRECTIONS):
             expected = goal if goal in safe else (safe[0] if safe else "STOP")
-            if namespace["choose_action"](*blocked, goal) != expected:
+            try:
+                actual_helper = namespace["choose_action"](*blocked, goal)
+            except Exception as error:
+                raise ValueError(f"Helper failed for {blocked}, {goal}: {error}") from error
+            if actual_helper != expected:
                 raise ValueError(f"Helper returned a wrong move for {blocked}, {goal}.")
         for goal_bits in range(8):
             goals = tuple(bool(goal_bits & (1 << i)) for i in range(3))
@@ -144,4 +148,35 @@ def run_developer(plan):
             messages.extend([
                 {"role": "assistant", "content": source},
                 {"role": "user", "content": f"Fix this validation error: {error}. Return only corrected Python source."},
+            ])
+
+
+def run_developer_revision(original_code, review_notes, benchmark_report, requirements, plan):
+    """Ask Qwen for a revised implementation, preserving the original artifact."""
+    from analyst_agent import validate_requirements
+
+    validate_requirements(requirements)
+    validate_plan(plan)
+    validate_code(original_code)
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT + "\nRevise the original code using the measured reviews. Return only the two required Python functions."},
+        {"role": "user", "content": json.dumps({
+            "original_code": original_code,
+            "simulation_review": review_notes,
+            "benchmark_report": benchmark_report,
+            "requirements": requirements,
+            "plan": plan,
+        }, ensure_ascii=False)},
+    ]
+    for attempt in range(4):
+        response = chat(model=MODEL, think=False, messages=messages)
+        source = response.message.content.strip()
+        try:
+            return validate_code(source)
+        except ValueError as error:
+            if attempt == 3:
+                raise ValueError(f"Qwen produced an invalid revision: {error}") from error
+            messages.extend([
+                {"role": "assistant", "content": source},
+                {"role": "user", "content": f"Fix this validation error: {error}. Return only Python source."},
             ])

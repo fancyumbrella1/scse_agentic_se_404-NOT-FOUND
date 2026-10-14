@@ -1,5 +1,5 @@
 {
-  "goal": "Navigate toward the goal while avoiding blocked paths",
+  "goal": "The robot should navigate to its goal while avoiding obstacles and stopping in safe directions when necessary.",
   "allowed_actions": [
     "FORWARD",
     "LEFT",

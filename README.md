@@ -63,3 +63,38 @@ python -c "from generated.navigation_logic import decide_next_move; print(decide
 This prints `RIGHT`. All six state fields are booleans. `choose_action` remains
 inside the generated file as the original navigation helper, but callers use
 `decide_next_move(state)`.
+
+## Integration and simulation
+
+The integration template files, four IR-SIM worlds, and all group work are in
+this same repository. Install the updated dependencies and run the full pipeline:
+
+```powershell
+python -m pip install -r requirements.txt
+python main.py
+```
+
+`main.py` runs the Analyst, Planner, Developer, Test Agent, exhaustive state
+simulation, simulation Reviewer, four-world IR-SIM benchmark, and benchmark
+Reviewer. It writes the event log to `trace.log`. The generated tests are in
+`test_agent_generated.py`; all results and review notes are in `artifacts/`.
+The original generated code is in `artifacts/navigation_logic.py`, the active
+code is in `generated/navigation_logic.py`, and the reviewed version is in
+`generated/navigation_logic_revised.py`.
+
+To run a single visual world, use `bash run_visual.sh irsim_worlds/world_easy.yaml`
+on a system with a graphical display. The automated benchmark uses the same
+provided IR-SIM test harness with a noninteractive plotting backend:
+
+```powershell
+python benchmark_irsim.py
+```
+
+The recorded run passed all 64 state combinations and all four IR-SIM worlds.
+All four reached the goal within the 200-step efficiency threshold (150, 148,
+187, and 193 steps). Since both reviews found no measured failure, the reviewed
+navigation file preserves the validated behavior. `artifacts/revision_status.json`
+records this decision; the revised simulation and benchmark reports verify it.
+The original Qwen 8B artifact was generated in the earlier stage. On the recorded
+machine the 8B model ran out of memory; the smaller local Qwen model was used
+for the new agents, and the validated earlier Developer artifact was retained.

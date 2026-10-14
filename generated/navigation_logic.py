@@ -21,4 +21,4 @@ def decide_next_move(state):
         goal_direction = "LEFT"
     elif state["goal_on_right"] and not state["right_blocked"]:
         goal_direction = "RIGHT"
-    return choose_action(state["front_blocked"], state["left_blocked"], state["right_blocked"], goal_direction)
+    return choose_action(state["front_blocked"], state["left_blocked"], state["right_blocked"], goal_direction)\n

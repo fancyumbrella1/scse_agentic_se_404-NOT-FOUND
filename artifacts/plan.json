@@ -1,5 +1,5 @@
 {
-  "strategy": "Prioritize moving toward the goal in the order of FORWARD, LEFT, RIGHT. If the goal direction is blocked, choose the first safe fallback direction. Stop only when all directions are blocked.",
+  "strategy": "Prioritize forward navigation first, then left and right, with a fallback to the first safe direction in the specified order when all directions are blocked.",
   "decisions": [
     {
       "condition": "Goal ahead is safe",
